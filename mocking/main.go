@@ -11,10 +11,18 @@ type Sleeper interface {
 	Sleep()
 }
 
-type DefaultSleeper struct{}
+// ConfigurableSleeper is an implementation of Sleeper with a defined delay.
+type ConfigurableSleeper struct {
+	duration time.Duration
+	// This takes a sleep function as an argument
+	sleep    func(time.Duration)
+}
 
-func (d *DefaultSleeper) Sleep() {
-	time.Sleep(1 * time.Second)
+// Sleep will pause execution for the defined Duration.
+// This is a wrapper around what argument is passed in for sleep.
+// But having this Sleep() method also allows us to adhere to the interface.
+func (c *ConfigurableSleeper) Sleep() {
+	c.sleep(c.duration)
 }
 
 const finalWord = "Go!"
@@ -32,5 +40,6 @@ func Countdown(out io.Writer, sleeper Sleeper) {
 // Sanity check ourselves to ensure we can pass in anything that implements
 // the io.Writer interface.
 func main() {
-	Countdown(os.Stdout, &DefaultSleeper{})
+	sleeper := &ConfigurableSleeper{1 * time.Second, time.Sleep}
+	Countdown(os.Stdout, sleeper)
 }
