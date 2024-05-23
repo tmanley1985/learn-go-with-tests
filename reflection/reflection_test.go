@@ -5,6 +5,18 @@ import (
 	"testing"
 )
 
+// These are to make the nested structs a little easier to read
+// because the anonymous struct syntax is a bit hard to follow.
+type Person struct {
+	Name    string
+	Profile Profile
+}
+
+type Profile struct {
+	Age  int
+	City string
+}
+
 func TestWalk(t *testing.T) {
 
 	cases := []struct {
@@ -18,6 +30,48 @@ func TestWalk(t *testing.T) {
 				Name string
 			}{"Chris"},
 			[]string{"Chris"},
+		},
+		{
+			"struct with two string fields",
+			struct {
+				Name string
+				City string
+			}{"Chris", "London"},
+			[]string{"Chris", "London"},
+		},
+		{
+			"struct with non string field",
+			struct {
+				Name string
+				Age  int
+			}{"Chris", 33},
+			[]string{"Chris"},
+		},
+		// This is a nested struct
+		{
+			"nested fields",
+			Person{
+				"Chris",
+				Profile{33, "London"},
+			},
+			[]string{"Chris", "London"},
+		},
+		// What if our struct has a pointer to another struct?
+		{
+			"pointers to things",
+			&Person{
+				"Chris",
+				Profile{33, "London"},
+			},
+			[]string{"Chris", "London"},
+		},
+		{
+			"slices",
+			[]Profile {
+				{33, "London"},
+				{34, "Reykjavík"},
+			},
+			[]string{"London", "Reykjavík"},
 		},
 	}
 
