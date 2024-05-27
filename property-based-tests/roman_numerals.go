@@ -37,3 +37,20 @@ func ConvertToRoman(arabic int) string {
 
 	return result.String()
 }
+
+// This is the opposite of the other algorithm.
+// Instead of subtracting from a number to build a string,
+// we're subtracting from a string to build a number!
+func ConvertToArabic(roman string) int {
+
+	var arabic = 0
+
+	for _, numeral := range allRomanNumerals {
+		for strings.HasPrefix(roman, numeral.Symbol) {
+			arabic += numeral.Value
+			roman = strings.TrimPrefix(roman, numeral.Symbol)
+		}
+	}
+
+	return arabic
+}
