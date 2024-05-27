@@ -1,38 +1,63 @@
 package context
 
 import (
-	"testing"
+	"context"
+	"errors"
+	"log"
+	"net/http"
 	"time"
 )
 
 // SpyStore allows you to simulate a store and see how its used.
 type SpyStore struct {
-	response  string
-	cancelled bool
-	t         *testing.T
+	response string
 }
 
 // Fetch returns response after a short delay.
-func (s *SpyStore) Fetch() string {
-	time.Sleep(100 * time.Millisecond)
-	return s.response
-}
+func (s *SpyStore) Fetch(ctx context.Context) (string, error) {
+	data := make(chan string, 1)
 
-// Cancel will record the call.
-func (s *SpyStore) Cancel() {
-	s.cancelled = true
-}
+	go func() {
+		var result string
+		for _, c := range s.response {
+			select {
+			case <-ctx.Done():
+				log.Println("spy store got cancelled")
+				return
+			default:
+				time.Sleep(10 * time.Millisecond)
+				result += string(c)
+			}
+		}
+		data <- result
+	}()
 
-func (s *SpyStore) assertWasCancelled() {
-	s.t.Helper()
-	if !s.cancelled {
-		s.t.Error("store was not told to cancel")
+	select {
+	case <-ctx.Done():
+		return "", ctx.Err()
+	case res := <-data:
+		return res, nil
 	}
 }
 
-func (s *SpyStore) assertWasNotCancelled() {
-	s.t.Helper()
-	if s.cancelled {
-		s.t.Error("store was told to cancel")
-	}
+// SpyResponseWriter checks whether a response has been written.
+type SpyResponseWriter struct {
+	written bool
+}
+
+// Header will mark written to true.
+func (s *SpyResponseWriter) Header() http.Header {
+	s.written = true
+	return nil
+}
+
+// Write will mark written to true.
+func (s *SpyResponseWriter) Write([]byte) (int, error) {
+	s.written = true
+	return 0, errors.New("not implemented")
+}
+
+// WriteHeader will mark written to true.
+func (s *SpyResponseWriter) WriteHeader(statusCode int) {
+	s.written = true
 }
