@@ -4,7 +4,7 @@ import "strings"
 
 
 type RomanNumeral struct {
-	Value  int
+	Value  uint16
 	Symbol string
 }
 
@@ -24,7 +24,7 @@ var allRomanNumerals = []RomanNumeral{
 	{1, "I"},
 }
 
-func ConvertToRoman(arabic int) string {
+func ConvertToRoman(arabic uint16) string {
 
 	var result strings.Builder
 
@@ -41,9 +41,9 @@ func ConvertToRoman(arabic int) string {
 // This is the opposite of the other algorithm.
 // Instead of subtracting from a number to build a string,
 // we're subtracting from a string to build a number!
-func ConvertToArabic(roman string) int {
+func ConvertToArabic(roman string) uint16 {
 
-	var arabic = 0
+	var arabic uint16 = 0
 
 	for _, numeral := range allRomanNumerals {
 		for strings.HasPrefix(roman, numeral.Symbol) {
