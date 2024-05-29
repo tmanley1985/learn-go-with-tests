@@ -5,27 +5,14 @@ import (
 	"time"
 )
 
-// A Point represents a two-dimensional Cartesian coordinate
+// A Point represents a two dimensional Cartesian coordinate.
 type Point struct {
 	X float64
 	Y float64
 }
 
-const secondHandLength = 90
-const clockCenterX = 150
-const clockCenterY = 150
-
-// SecondHand is the unit vector of the second hand of an analogue clock at time `t`
-// represented as a Point.
-func SecondHand(t time.Time) Point {
-	p := secondHandPoint(t)
-	p = Point{p.X * secondHandLength, p.Y * secondHandLength}   // scale: the length of our second hand is 90. This is just a convention.
-	p = Point{p.X, -p.Y}            // flip: to account for the SVG having an origin in the top left hand corner.
-	p = Point{p.X + clockCenterX, p.Y + clockCenterY} // translate: the origin needs to be the center of the clock at 150, 150!
-	return p
-}
 func secondsInRadians(t time.Time) float64 {
-	return (math.Pi / (30 / (float64(t.Second()))))
+	return (math.Pi / (30 / float64(t.Second())))
 }
 
 func secondHandPoint(t time.Time) Point {
@@ -34,4 +21,9 @@ func secondHandPoint(t time.Time) Point {
 	y := math.Cos(angle)
 
 	return Point{x, y}
+}
+
+func minutesInRadians(t time.Time) float64 {
+	return (secondsInRadians(t) / 60) +
+		(math.Pi / (30 / float64(t.Minute())))
 }
