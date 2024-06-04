@@ -59,22 +59,25 @@ func newPost(postBody io.Reader) (Post, error) {
 	description := readMetaLine(descriptionSeparator)
 	tags := strings.Split(readMetaLine(tagsSeparator), ", ")
 
-
-	// Ignore the --- separator
-	scanner.Scan()
-
-	buf := bytes.Buffer{}
-
-	for scanner.Scan() {
-		fmt.Fprintln(&buf, scanner.Text())
-	}
-
-	body := strings.TrimSuffix(buf.String(), "\n")
-
 	return Post{
 		Title:       title,
 		Description: description,
 		Tags:        tags,
-		Body:		 body,
+		Body:		 readBody(scanner),
 	}, nil
+}
+
+func readBody(scanner *bufio.Scanner) string {
+		// Ignore the --- separator
+		scanner.Scan()
+
+		buf := bytes.Buffer{}
+	
+		for scanner.Scan() {
+			fmt.Fprintln(&buf, scanner.Text())
+		}
+	
+		body := strings.TrimSuffix(buf.String(), "\n")
+
+		return body
 }
