@@ -14,7 +14,7 @@ func Render(w io.Writer, p blogposts.Post) error {
 		return err
 	}
 
-	_, err = fmt.Fprintf(w, "<ul>")
+	_, err = fmt.Fprintf(w, "Tags: <ul>")
 
 	if err != nil {
 		return err
