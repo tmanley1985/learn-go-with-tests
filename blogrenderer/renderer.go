@@ -4,6 +4,7 @@ import (
 	"embed"
 	"html/template"
 	"io"
+	"strings"
 
 	blogposts "github.com/tmanley1985/learn-go-with-tests/reading-files"
 )
@@ -13,13 +14,42 @@ var (
 	postTemplates embed.FS
 )
 
-func Render(w io.Writer, p blogposts.Post) error {
+type PostRenderer struct {
+	templ *template.Template
+}
+
+func NewPostRenderer() (*PostRenderer, error) {
 	templ, err := template.ParseFS(postTemplates, "templates/*.gohtml")
+	if err != nil {
+		return nil, err
+	}
+
+	return &PostRenderer{templ: templ}, nil
+}
+
+func (r *PostRenderer) Render(w io.Writer, p blogposts.Post) error {
+
+	if err := r.templ.ExecuteTemplate(w, "blog.gohtml", p); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *PostRenderer) RenderIndex(w io.Writer, posts []blogposts.Post) error {
+	// Notice how we're calling the santiseTitle we created below in the template?
+	indexTemplate := `<ol>{{range .}}<li><a href="/post/{{sanitiseTitle .Title}}">{{.Title}}</a></li>{{end}}</ol>`
+
+	templ, err := template.New("index").Funcs(template.FuncMap{
+		"sanitiseTitle": func(title string) string {
+			return strings.ToLower(strings.Replace(title, " ", "-", -1))
+		},
+	}).Parse(indexTemplate)
 	if err != nil {
 		return err
 	}
 
-	if err := templ.ExecuteTemplate(w, "blog.gohtml", p); err != nil {
+	if err := templ.Execute(w, posts); err != nil {
 		return err
 	}
 
