@@ -10,10 +10,10 @@ import (
 )
 
 type Post struct {
-	Title string
+	Title       string
 	Description string
-	Tags []string
-	Body string
+	Tags        []string
+	Body        string
 }
 
 func NewPostsFromFS(fileSystem fs.FS) ([]Post, error) {
@@ -44,7 +44,7 @@ func getPost(fileSystem fs.FS, fileName string) (Post, error) {
 const (
 	titleSeparator       = "Title: "
 	descriptionSeparator = "Description: "
-	tagsSeparator		 = "Tags: "
+	tagsSeparator        = "Tags: "
 )
 
 func newPost(postBody io.Reader) (Post, error) {
@@ -63,21 +63,25 @@ func newPost(postBody io.Reader) (Post, error) {
 		Title:       title,
 		Description: description,
 		Tags:        tags,
-		Body:		 readBody(scanner),
+		Body:        readBody(scanner),
 	}, nil
 }
 
 func readBody(scanner *bufio.Scanner) string {
-		// Ignore the --- separator
-		scanner.Scan()
+	// Ignore the --- separator
+	scanner.Scan()
 
-		buf := bytes.Buffer{}
-	
-		for scanner.Scan() {
-			fmt.Fprintln(&buf, scanner.Text())
-		}
-	
-		body := strings.TrimSuffix(buf.String(), "\n")
+	buf := bytes.Buffer{}
 
-		return body
+	for scanner.Scan() {
+		fmt.Fprintln(&buf, scanner.Text())
+	}
+
+	body := strings.TrimSuffix(buf.String(), "\n")
+
+	return body
+}
+
+func (p Post) SanitisedTitle() string {
+	return strings.ToLower(strings.Replace(p.Title, " ", "-", -1))
 }

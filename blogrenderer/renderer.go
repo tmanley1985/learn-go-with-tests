@@ -4,7 +4,6 @@ import (
 	"embed"
 	"html/template"
 	"io"
-	"strings"
 
 	blogposts "github.com/tmanley1985/learn-go-with-tests/reading-files"
 )
@@ -37,21 +36,5 @@ func (r *PostRenderer) Render(w io.Writer, p blogposts.Post) error {
 }
 
 func (r *PostRenderer) RenderIndex(w io.Writer, posts []blogposts.Post) error {
-	// Notice how we're calling the santiseTitle we created below in the template?
-	indexTemplate := `<ol>{{range .}}<li><a href="/post/{{sanitiseTitle .Title}}">{{.Title}}</a></li>{{end}}</ol>`
-
-	templ, err := template.New("index").Funcs(template.FuncMap{
-		"sanitiseTitle": func(title string) string {
-			return strings.ToLower(strings.Replace(title, " ", "-", -1))
-		},
-	}).Parse(indexTemplate)
-	if err != nil {
-		return err
-	}
-
-	if err := templ.Execute(w, posts); err != nil {
-		return err
-	}
-
-	return nil
+	return r.templ.ExecuteTemplate(w, "index.gohtml", posts)
 }
